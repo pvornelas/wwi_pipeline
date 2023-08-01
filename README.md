@@ -7,10 +7,10 @@ AIRFLOW_HOME=/home/{user}/projeto/.venv/airflow
 KAGGLE_CONFIG_DIR=/home/{user}/projeto/.venv/.kaggle
 
 Outros arquivos que precisam ter os caminhos de diretório alterado são:  
-/.kaggle/kaggle.json
-/airflow/dags/pipeline.py
-/src/testes/consultas.py
-/src/util/unzip_dataset.py
+/.kaggle/kaggle.json  
+/airflow/dags/pipeline.py  
+/src/testes/consultas.py  
+/src/util/unzip_dataset.py  
 
 Feita a configuração baixe as dependencias com o seguinte comando:  
 pipenv install
