@@ -1,8 +1,9 @@
 # Projeto de ETL orquestrado com Apache Airflow  
 
-O projeto roda em Linux e algumas configurações e criações de diretório são necessárias para que utiliza-lo.  
+O projeto roda em Linux e algumas configurações e criações de diretório são necessárias para que utiliza-lo.
+Antes de tudo é necessário ter instalado o pipenv.  
 Junto com os arquivos Pipfile e Pipfile.lock é necessário criar um arquivo **.env** com as variáveis de ambiente utilizadas no projeto.  
-No arquivo em inclua as duas variáveis de ambiente:  
+No arquivo em inclua as duas variáveis de ambiente, substitua o user pelo caminho da máquina utilizada:  
 AIRFLOW_HOME=/home/{user}/projeto/.venv/airflow  
 KAGGLE_CONFIG_DIR=/home/{user}/projeto/.venv/.kaggle
 
