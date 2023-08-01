@@ -1,0 +1,12 @@
+lib
+lib64
+share
+include
+generated
+webserver_config.py
+logs
+bin
+*.cfg
+*.env
+*db
+*.csv
