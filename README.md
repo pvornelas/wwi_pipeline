@@ -3,7 +3,7 @@
 O projeto roda em Linux e algumas configurações e criações de diretório são necessárias para que utiliza-lo.  
 Junto com os arquivos Pipfile e Pipfile.lock é necessário criar um arquivo **.env** com as variáveis de ambiente utilizadas no projeto.  
 No arquivo em inclua as duas variáveis de ambiente:  
-AIRFLOW_HOME=/home/{user}/projeto/.venv/airflow
+AIRFLOW_HOME=/home/{user}/projeto/.venv/airflow  
 KAGGLE_CONFIG_DIR=/home/{user}/projeto/.venv/.kaggle
 
 Outros arquivos que precisam ter os caminhos de diretório alterado são:  
