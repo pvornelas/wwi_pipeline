@@ -19,13 +19,13 @@ Instaladas as dependências execute o airflow com os seguintes comandos:
 airflow db init
 
 Você pode criar um usuário com o seguinte comando:  
-airflow users create \
-    --username user \
-    --firstname name \
-    --lastname lastname \
-    --role Admin \
-    --password admin \
-    --email user.mail@mail.com
+airflow users create \  
+    --username user \  
+    --firstname name \  
+    --lastname lastname \  
+    --role Admin \  
+    --password admin \  
+    --email user.mail@mail.com  
     
 Em seguida executar airflow webserver --port 8080 e airflow scheduler
 
