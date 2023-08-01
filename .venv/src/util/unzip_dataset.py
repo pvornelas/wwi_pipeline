@@ -11,3 +11,7 @@ if __name__ == "__main__":
 
     if os.path.exists("/home/pvini/projeto/.venv/data/base/datasets"):
         shutil.rmtree("/home/pvini/projeto/.venv/data/base/datasets")
+
+    data_warehouse_path = "/home/pvini/projeto/.venv/data/dw"
+    if not os.path.exists(data_warehouse_path):
+        os.makedirs(data_warehouse_path)

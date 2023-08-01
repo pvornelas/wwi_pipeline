@@ -32,6 +32,7 @@ with DAG(
         download_task = BashOperator(
             task_id="download_dataset",
             bash_command=f"""kaggle config set -n path -v {dataset_path}
+            mkdir -p {dataset_path}
             kaggle datasets download -d pauloviniciusornelas/wwimporters"""
         )
 
