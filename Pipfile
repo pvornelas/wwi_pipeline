@@ -10,6 +10,7 @@ pandas = "*"
 openpyxl = "*"
 pydantic = "==1.10.10"
 prophet = "*"
+scikit-learn = "*"
 
 [dev-packages]
 
