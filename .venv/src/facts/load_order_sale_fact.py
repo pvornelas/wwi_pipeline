@@ -15,43 +15,39 @@ if __name__ == "__main__":
     package_type_df = pd.read_csv(args.dataset_path + "/Warehouse/Warehouse.PackageTypes.csv", delimiter=";")
     customer_df = pd.read_csv(args.dataset_path + "/Sales/Sales.Customers.csv", sep=";")
 
-    invoice_lines_df = invoice_lines_df[["InvoiceID", "StockItemID", "TaxRate", "TaxAmount", "LineProfit", "ExtendedPrice"]]
-    invoices_df = invoices_df[["InvoiceID", "CustomerID", "OrderID", "InvoiceDate", "TotalDryItems", "TotalChillerItems", "ConfirmedDeliveryTime"]]
+    invoice_lines_df = invoice_lines_df[["InvoiceID", "StockItemID", "Description", "PackageTypeID", "TaxRate", "TaxAmount", "LineProfit",
+                                          "ExtendedPrice", "Quantity", "UnitPrice"]]
+    invoices_df = invoices_df[["InvoiceID", "CustomerID", "OrderID", "InvoiceDate", "TotalDryItems", "TotalChillerItems",
+                                "ConfirmedDeliveryTime", "SalespersonPersonID"]]
+
+    orders_df = orders_df[["OrderID", "BackorderOrderID", "OrderDate", "ExpectedDeliveryDate", "PickingCompletedWhen", "PickedByPersonID"]]
+
+    invoices_df = invoices_df.merge(orders_df, how="left", on="OrderID")
     invoice_lines_df = invoice_lines_df.merge(invoices_df, how="left", on="InvoiceID")
 
-    order_lines_df.drop(labels=["PickingCompletedWhen"], axis=1, inplace=True)
+    customer_city_mapper = customer_df.set_index("CustomerID")["DeliveryCityID"].to_dict()
+    invoice_lines_df["CityID"] = invoice_lines_df['CustomerID'].map(customer_city_mapper)
 
     package_type_mapper = package_type_df.set_index("PackageTypeID")["PackageTypeName"].to_dict()
-    order_lines_df['Package'] = order_lines_df['PackageTypeID'].map(package_type_mapper)
+    invoice_lines_df['Package'] = invoice_lines_df['PackageTypeID'].map(package_type_mapper)
 
-    customer_city_mapper = customer_df.set_index("CustomerID")["DeliveryCityID"].to_dict()
-    orders_df["CityID"] = orders_df['CustomerID'].map(customer_city_mapper)
-
-    order_lines_df = order_lines_df.merge(orders_df, how="left", on="OrderID")
-
-    order_lines_df = order_lines_df[["OrderLineID", "OrderID", "StockItemID", "CustomerID", "Description", "Package",
-                                     "SalespersonPersonID", "PickedByPersonID", "BackorderOrderID", "OrderDate",
-                                     "ExpectedDeliveryDate", "CityID", "PickingCompletedWhen", "Quantity", "UnitPrice",]]
-
-    order_lines_df = order_lines_df.merge(invoice_lines_df, how="inner", on=("OrderID", "CustomerID", "StockItemID"))
-
-    order_lines_df = order_lines_df[["InvoiceID", "OrderLineID", "OrderID", "BackorderOrderID", "CustomerID", "CityID", "StockItemID",
+    invoice_lines_df = invoice_lines_df[["InvoiceID", "OrderID", "BackorderOrderID", "CustomerID", "CityID", "StockItemID",
                                      "Description", "Package", "OrderDate", "ExpectedDeliveryDate", "PickingCompletedWhen",
                                      "InvoiceDate", "ConfirmedDeliveryTime", "SalespersonPersonID", "PickedByPersonID", "Quantity", "TotalDryItems",
                                      "TotalChillerItems", "UnitPrice", "TaxRate", "TaxAmount", "LineProfit", "ExtendedPrice"]]
 
-    order_lines_df.rename(columns={
+    invoice_lines_df.rename(columns={
         "PickingCompletedWhen": "PickedDate",
         "SalespersonPersonID": "SalespersonID",
         "PickedByPersonID": "PickerID",
         "ExtendedPrice": "TotalIncludingTax"
     }, inplace=True)
 
-    order_lines_df["OrderDate"] = pd.to_datetime(order_lines_df["OrderDate"], format="%d/%m/%Y")
-    order_lines_df["ExpectedDeliveryDate"] = pd.to_datetime(order_lines_df["ExpectedDeliveryDate"], format="%d/%m/%Y")
-    order_lines_df["InvoiceDate"] = pd.to_datetime(order_lines_df["InvoiceDate"], format="%d/%m/%Y")
-    order_lines_df["PickedDate"] = pd.to_datetime(order_lines_df["PickedDate"], format="%Y-%m-%d %H:%M:%S.%f")
-    order_lines_df["ConfirmedDeliveryTime"] = pd.to_datetime(order_lines_df["ConfirmedDeliveryTime"], format="%Y-%m-%d %H:%M:%S.%f")
+    invoice_lines_df["OrderDate"] = pd.to_datetime(invoice_lines_df["OrderDate"], format="%d/%m/%Y")
+    invoice_lines_df["ExpectedDeliveryDate"] = pd.to_datetime(invoice_lines_df["ExpectedDeliveryDate"], format="%d/%m/%Y")
+    invoice_lines_df["InvoiceDate"] = pd.to_datetime(invoice_lines_df["InvoiceDate"], format="%d/%m/%Y")
+    invoice_lines_df["PickedDate"] = pd.to_datetime(invoice_lines_df["PickedDate"], format="%Y-%m-%d %H:%M:%S.%f")
+    invoice_lines_df["ConfirmedDeliveryTime"] = pd.to_datetime(invoice_lines_df["ConfirmedDeliveryTime"], format="%Y-%m-%d %H:%M:%S.%f")
 
     conversor = {
         "InvoiceID": np.int64,
@@ -66,7 +62,7 @@ if __name__ == "__main__":
     }
 
     for key in conversor:
-        order_lines_df[key].fillna(0, inplace=True)
-        order_lines_df[key] = order_lines_df[key].astype(conversor[key])
+        invoice_lines_df[key].fillna(0, inplace=True)
+        invoice_lines_df[key] = invoice_lines_df[key].astype(conversor[key])
 
-    order_lines_df.to_csv(args.output_path + "/fact_order_sale.csv", sep=";", index=False)
+    invoice_lines_df.to_csv(args.output_path + "/fact_order_sale.csv", sep=";", index=False)
