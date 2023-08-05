@@ -33,7 +33,7 @@ if __name__ == "__main__":
                                      "SalespersonPersonID", "PickedByPersonID", "BackorderOrderID", "OrderDate",
                                      "ExpectedDeliveryDate", "CityID", "PickingCompletedWhen", "Quantity", "UnitPrice",]]
 
-    order_lines_df = order_lines_df.merge(invoice_lines_df, how="left", on=("OrderID", "CustomerID", "StockItemID"))
+    order_lines_df = order_lines_df.merge(invoice_lines_df, how="inner", on=("OrderID", "CustomerID", "StockItemID"))
 
     order_lines_df = order_lines_df[["InvoiceID", "OrderLineID", "OrderID", "BackorderOrderID", "CustomerID", "CityID", "StockItemID",
                                      "Description", "Package", "OrderDate", "ExpectedDeliveryDate", "PickingCompletedWhen",
