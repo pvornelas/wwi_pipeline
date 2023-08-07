@@ -67,7 +67,7 @@ def teste_nivel_de_reabastecimento():
         print(f"Nível de Reabasteimento:{nivel_de_reabastecimento}")
 
 def teste_lead_time():
-    lead_time = 8
+    lead_time = 23
     lead_time_esperado = 1
     data = datetime(2016, 5, 16)
 
@@ -77,8 +77,75 @@ def teste_lead_time():
         print(f"Lead time: {lead_time}")
         print(f"Lead time esperado: {lead_time_esperado}")
 
+def teste_dados_mapa():
+    faturamento = 6654051.41
+    imposto = 866736.1100000001
+    faturamento_liquido = 5787315.3
+    lucro = 2864044.8000000003
+    total_clientes = 21.0
+    total_vendas = 2324.0
+    participacao_no_faturamento = 0.0336
+    regiao = 10 # ID 10 - Estado da Flórida
+
+    resultado = consultas.consulta_dados_do_mapa(regiao)
+    if (resultado["Faturamento"] == faturamento and resultado["Imposto"] == imposto and resultado["Faturamento Líquido"] == faturamento_liquido and
+    resultado["Lucro"] == lucro and resultado["Total Clientes"] == total_clientes and resultado["Total Vendas"] == total_vendas and
+    resultado["% Participação no Faturamento"] == participacao_no_faturamento):
+        print(f"Teste realizado com sucesso para dados do estado ID {regiao}.")
+        print(f"Faturamento: {resultado['Faturamento']}")
+        print(f"Imposto: {resultado['Imposto']}")
+        print(f"Faturamento líquido: {resultado['Faturamento Líquido']}")
+        print(f"Lucro: {resultado['Lucro']}")
+        print(f"Total Clientes: {resultado['Total Clientes']}")
+        print(f"Participação no faturamento entre regiões: {resultado['% Participação no Faturamento']}")
+        print(f"Total de vendas: {resultado['Total Vendas']}")
+
+def teste_dados_mapa():
+    faturamento = 6654051.41
+    imposto = 866736.1100000001
+    faturamento_liquido = 5787315.3
+    lucro = 2864044.8000000003
+    total_clientes = 21.0
+    total_vendas = 2324.0
+    participacao_no_faturamento = 0.0336
+    regiao = 10 # ID 10 - Estado da Flórida
+
+    resultado = consultas.consulta_dados_do_mapa(regiao)
+    if (resultado["Faturamento"] == faturamento and resultado["Imposto"] == imposto and resultado["Faturamento Líquido"] == faturamento_liquido and
+    resultado["Lucro"] == lucro and resultado["Total Clientes"] == total_clientes and resultado["Total Vendas"] == total_vendas and
+    resultado["% Participação no Faturamento"] == participacao_no_faturamento):
+        print(f"Teste realizado com sucesso para dados do estado ID {regiao}.")
+        print(f"Faturamento: {resultado['Faturamento']}")
+        print(f"Imposto: {resultado['Imposto']}")
+        print(f"Faturamento líquido: {resultado['Faturamento Líquido']}")
+        print(f"Lucro: {resultado['Lucro']}")
+        print(f"Total Clientes: {resultado['Total Clientes']}")
+        print(f"Participação no faturamento entre regiões: {resultado['% Participação no Faturamento']}")
+        print(f"Total de vendas: {resultado['Total Vendas']}")
+
+def teste_participacao_do_empregado_no_faturamento():
+    id_vendedor = 16
+    participacao = 0.1042
+
+    resultado = consultas.consulta_participacao_empregado_faturamento(id_vendedor)
+    if resultado == participacao:
+        print(f"Teste realizado com sucesso para vendedor de ID {id_vendedor}.")
+        print(f"Participação no faturamento: {resultado}")
+
+def teste_media_de_saida_do_produto():
+    id_produto = 8
+    media_de_saida = 5.46
+
+    resultado = consultas.consulta_media_de_saida_do_produto(id_produto)
+    if resultado == media_de_saida:
+        print(f"Teste realizado com sucesso para produto de ID {id_produto}.")
+        print(f"Média de saída de estoque: {resultado}")
+
 if __name__ == "__main__":
-    # teste_tooltip_grafico_tendencia_faturamento()
+    teste_tooltip_grafico_tendencia_faturamento()
+    teste_media_de_saida_do_produto()
+    teste_participacao_do_empregado_no_faturamento()
     teste_lead_time()
-    # teste_tooltip_categoria_cliente()
-    # teste_nivel_de_reabastecimento()
+    teste_dados_mapa()
+    teste_tooltip_categoria_cliente()
+    teste_nivel_de_reabastecimento()

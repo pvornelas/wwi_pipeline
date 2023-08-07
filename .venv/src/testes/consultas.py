@@ -1,11 +1,9 @@
 import os
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 path = "/home/pvini/projeto/.venv/data/base"
-path2 = "/home/pvini/projeto/.venv/data/dw"
 
 def consulta_faturamento_lucro_e_vendas(mes_ano: datetime):
     invoice_lines_df_base = pd.read_csv(os.path.join(path, "Sales/Sales.InvoiceLines.csv"), sep=";")
@@ -76,26 +74,80 @@ def consulta_produto_em_nivel_de_reabastecimento():
 
 def consulta_lead_time(data: datetime):
     orders_df = pd.read_csv(os.path.join(path, "Sales/Sales.Orders.csv"), sep=";")
-    invoice_lines_df = pd.read_csv(os.path.join(path, "Sales/Sales.InvoiceLines.csv"), sep=";")
     invoices_df = pd.read_csv(os.path.join(path, "Sales/Sales.Invoices.csv"), sep=";")
 
-    invoice_lines_df = invoice_lines_df[["InvoiceID", "StockItemID"]]
-    invoices_df = invoices_df[["InvoiceID", "CustomerID", "OrderID", "InvoiceDate",  "ConfirmedDeliveryTime"]]
+    invoices_df = invoices_df[["InvoiceID", "OrderID", "InvoiceDate",  "ConfirmedDeliveryTime"]]
     orders_df = orders_df[["OrderID", "OrderDate", "ExpectedDeliveryDate"]]
 
     invoices_df = invoices_df.merge(orders_df, how="left", on="OrderID")
+
+    invoices_df["InvoiceDate"] = pd.to_datetime(invoices_df["InvoiceDate"], format="%d/%m/%Y")
+    invoices_df = invoices_df[invoices_df["ConfirmedDeliveryTime"].notna()]
+
+    invoices_df["OrderDate"] = pd.to_datetime(invoices_df["OrderDate"], format="%d/%m/%Y")
+    invoices_df["ExpectedDeliveryDate"] = pd.to_datetime(invoices_df["ExpectedDeliveryDate"], format="%d/%m/%Y")
+    invoices_df["ConfirmedDeliveryTime"] = pd.to_datetime(invoices_df["ConfirmedDeliveryTime"], format="%Y-%m-%d %H:%M:%S.%f")
+
+    invoices_df["LeadTime"] = (invoices_df["ConfirmedDeliveryTime"] - invoices_df["OrderDate"]).dt.days
+    invoices_df["LeadTimeEsperado"] = (invoices_df["ExpectedDeliveryDate"] - invoices_df["OrderDate"]).dt.days
+
+    lead_time = invoices_df[(invoices_df["InvoiceDate"] == data)]["LeadTime"].mean()
+    lead_time_esperado = invoices_df[(invoices_df["InvoiceDate"] == data)]["LeadTimeEsperado"].mean()
+
+    return (round(lead_time), round(lead_time_esperado))
+
+def consulta_dados_do_mapa(regiao: int):
+    invoices_df = pd.read_csv(os.path.join(path, "Sales/Sales.Invoices.csv"), sep=";")
+    invoice_lines_df = pd.read_csv(os.path.join(path, "Sales/Sales.InvoiceLines.csv"), sep=";")
+
+    customers = pd.read_csv(os.path.join(path, "Sales/Sales.Customers.csv"), sep=";")
+    customers = customers[["CustomerID", "DeliveryCityID"]]
+
+    invoices_df = invoices_df.merge(customers, how="left", on="CustomerID")
+
+    cities = pd.read_csv(os.path.join(path, "Application/Application.Cities.csv"), sep=";")
+    cities = cities[["CityID", "StateProvinceID"]].rename(columns={"CityID": "DeliveryCityID"})
+
+    invoices_df = invoices_df.merge(cities, how="left", on="DeliveryCityID")
     invoice_lines_df = invoice_lines_df.merge(invoices_df, how="left", on="InvoiceID")
 
-    invoice_lines_df["InvoiceDate"] = pd.to_datetime(invoice_lines_df["InvoiceDate"], format="%d/%m/%Y")
-    invoice_lines_df = invoice_lines_df[invoice_lines_df["ConfirmedDeliveryTime"].notna()]
+    dados_geral = invoice_lines_df.groupby("StateProvinceID").agg({
+        "ExtendedPrice": 'sum',
+    }).reset_index().rename(columns={
+        "ExtendedPrice": "Faturamento",
+    })
 
-    invoice_lines_df["OrderDate"] = pd.to_datetime(invoice_lines_df["OrderDate"], format="%d/%m/%Y")
-    invoice_lines_df["ExpectedDeliveryDate"] = pd.to_datetime(invoice_lines_df["ExpectedDeliveryDate"], format="%d/%m/%Y")
-    invoice_lines_df["ConfirmedDeliveryTime"] = pd.to_datetime(invoice_lines_df["ConfirmedDeliveryTime"], format="%Y-%m-%d %H:%M:%S.%f")
+    faturamento_geral = dados_geral["Faturamento"].sum()
 
-    invoice_lines_df["LeadTime"] = (invoice_lines_df["ConfirmedDeliveryTime"] - invoice_lines_df["OrderDate"]).dt.days
-    invoice_lines_df["LeadTimeEsperado"] = (invoice_lines_df["ExpectedDeliveryDate"] - invoice_lines_df["OrderDate"]).dt.days
+    dados_florida = invoice_lines_df[(invoice_lines_df["StateProvinceID"] == regiao)].agg({
+        "ExtendedPrice": 'sum',
+        "TaxAmount": 'sum',
+        "LineProfit": 'sum',
+        "CustomerID": lambda x: len(x.unique()),
+        "InvoiceID": lambda x: len(x.unique()),
+    }).rename(index={
+        "ExtendedPrice": "Faturamento",
+        "TaxAmount": "Imposto",
+        "LineProfit": "Lucro",
+        "CustomerID": "Total Clientes",
+        "InvoiceID": "Total Vendas"
+    })
+    pc_participacao = (dados_florida["Faturamento"] / faturamento_geral).round(5)
+    dados_florida["% Participação no Faturamento"] = pc_participacao
+    dados_florida["Faturamento Líquido"] = dados_florida["Faturamento"] - dados_florida["Imposto"]
+    return dados_florida
 
-    lead_time = invoice_lines_df[(invoice_lines_df["InvoiceDate"] == datetime(2016, 5, 16))]["LeadTime"].mean()
-    lead_time_esperado = invoice_lines_df[(invoice_lines_df["InvoiceDate"] == datetime(2016, 5, 16))]["LeadTimeEsperado"].mean()
-    return (round(lead_time), round(lead_time_esperado))
+def consulta_participacao_empregado_faturamento(id_vendedor: int):
+    invoices_df = pd.read_csv(os.path.join(path, "Sales/Sales.Invoices.csv"), sep=";")
+    invoice_lines_df = pd.read_csv(os.path.join(path, "Sales/Sales.InvoiceLines.csv"), sep=";")
+
+    invoice_lines_df = invoice_lines_df.merge(invoices_df, how="left", on="InvoiceID")
+
+    faturamento_total = invoice_lines_df["ExtendedPrice"].sum()
+    faturamento_funcionario = invoice_lines_df[(invoice_lines_df["SalespersonPersonID"] == id_vendedor)]["ExtendedPrice"].sum()
+    return round(faturamento_funcionario / faturamento_total, 4)
+
+def consulta_media_de_saida_do_produto(id_produto: int):
+    estoque = pd.read_csv(os.path.join(path, "Warehouse/Warehouse.StockItemTransactions.csv"), sep=";")
+    saidas = estoque[(estoque["TransactionTypeID"] == 10) & (estoque["StockItemID"] == id_produto)]["Quantity"].mean()
+    return round(abs(saidas), 2)
