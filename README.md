@@ -16,8 +16,9 @@ Outros arquivos que precisam ter os caminhos de diretório alterado são:
 Feita a configuração baixe as dependencias com o seguinte comando:  
 pipenv install
 
-Instaladas as dependências execute o airflow com os seguintes comandos:  
-airflow db init
+Instaladas as dependências é necessário executar o comando **pipenv shell** para utilizar as variáveis de ambientes declaradas no projeto  
+Após isso, é hora de iniciar o airflow, execute os seguintes comandos:  
+airflow db init  
 
 Você pode criar um usuário com o seguinte comando:  
 airflow users create \  
